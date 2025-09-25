@@ -12,7 +12,7 @@
    UserParameter=sensors,/usr/bin/sensors -j
    ```
 3. Restart the Zabbix Agent service
-4. Import the template file into your Zabbix server
+4. Import the [template file](Linux%20CPU%20Temperature%20by%20Zabbix%20agent.yml) into your Zabbix server
 
 ## Configuration
 

@@ -1,0 +1,91 @@
+zabbix_export:
+  version: '7.2'
+  template_groups:
+    - uuid: a19610ad2ff64e4f941db7e20178506c
+      name: Custom
+  templates:
+    - uuid: 2db3ae313e874f97ba324bfe9ddb4919
+      template: 'Linux CPU Temperature by Zabbix agent'
+      name: 'Linux CPU Temperature by Zabbix agent'
+      description: |
+        User parameters:
+        
+        ```
+        UserParameter=sensors,/usr/bin/sensors -j
+        ```
+      groups:
+        - name: Custom
+      items:
+        - uuid: 02cf120017c64d7c8ac5edf4a1406306
+          name: 'CPU Temperature'
+          key: sensors
+          value_type: FLOAT
+          units: '° C'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '{$SENSORS_JSON_PATH}'
+          tags:
+            - tag: component
+              value: cpu
+            - tag: custom
+              value: cpu
+          triggers:
+            - uuid: c0412c76498a46f093966b6efde27f25
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent/sensors,5m)>={$CPU_TEMP_CRITICAL}'
+              name: 'Cpu temperature > {$CPU_TEMP_CRITICAL}'
+              priority: HIGH
+            - uuid: 4e481c7a267f497382bb4543aa623f84
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent/sensors,5m)>{$CPU_TEMP_WARN}'
+              name: 'Cpu temperature > {$CPU_TEMP_WARN}'
+              priority: WARNING
+      macros:
+        - macro: '{$CPU_TEMP_CRITICAL}'
+          value: '90'
+        - macro: '{$CPU_TEMP_WARN}'
+          value: '70'
+        - macro: '{$SENSORS_JSON_PATH}'
+          value: '$.[''coretemp-isa-0000''].[''Package id 0''].temp1_input'
+    - uuid: 4e3dbde3ac744bf6b126b0dbb13a8a93
+      template: 'Linux CPU Temperature by Zabbix agent active'
+      name: 'Linux CPU Temperature by Zabbix agent (active)'
+      description: |
+        User parameters:
+        
+        ```
+        UserParameter=sensors,/usr/bin/sensors -j
+        ```
+      groups:
+        - name: Custom
+      items:
+        - uuid: 1c06509119294b3390070b97961c85f0
+          name: 'CPU Temperature'
+          type: ZABBIX_ACTIVE
+          key: sensors
+          value_type: FLOAT
+          units: '° C'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '{$SENSORS_JSON_PATH}'
+          tags:
+            - tag: component
+              value: cpu
+            - tag: custom
+              value: cpu
+          triggers:
+            - uuid: e213890690844af6a30aed2e045d1aa1
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent active/sensors,5m)>={$CPU_TEMP_CRITICAL}'
+              name: 'Cpu temperature > {$CPU_TEMP_CRITICAL}'
+              priority: HIGH
+            - uuid: 01c6f2a922cc44d88df2b6602c8e493b
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent active/sensors,5m)>{$CPU_TEMP_WARN}'
+              name: 'Cpu temperature > {$CPU_TEMP_WARN}'
+              priority: WARNING
+      macros:
+        - macro: '{$CPU_TEMP_CRITICAL}'
+          value: '90'
+        - macro: '{$CPU_TEMP_WARN}'
+          value: '70'
+        - macro: '{$SENSORS_JSON_PATH}'
+          value: '$.[''coretemp-isa-0000''].[''Package id 0''].temp1_input'

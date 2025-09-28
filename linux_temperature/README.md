@@ -21,8 +21,8 @@
 Configure the following macros for the template:
 
 - **`{$SENSORS_JSON_PATH}`**: JSONPath expression to extract the desired temperature value from the sensors output (according to the output of `sensors -j` command on the target host)
-- **`{$CPU_TEMP_WARN}`**: Warning threshold for temperature triggers (default value recommended)
-- **`{$CPU_TEMP_CRITICAL}`**: Critical threshold for temperature triggers (default value recommended)
+- **`{$CPU_TEMP_WARN}`**: Warning threshold for temperature triggers
+- **`{$CPU_TEMP_CRITICAL}`**: Critical threshold for temperature triggers
 
 ### Usage
 

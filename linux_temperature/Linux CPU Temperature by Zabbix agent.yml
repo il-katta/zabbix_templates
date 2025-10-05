@@ -32,12 +32,14 @@ zabbix_export:
               value: cpu
           triggers:
             - uuid: c0412c76498a46f093966b6efde27f25
-              expression: 'avg(/Linux CPU Temperature by Zabbix agent/sensors,5m)>={$CPU_TEMP_CRITICAL}'
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent/sensors,15m)>{$CPU_TEMP_CRITICAL}'
               name: 'Cpu temperature > {$CPU_TEMP_CRITICAL}'
+              opdata: 'Current temperature: {ITEM.VALUE}'
               priority: HIGH
             - uuid: 4e481c7a267f497382bb4543aa623f84
-              expression: 'avg(/Linux CPU Temperature by Zabbix agent/sensors,5m)>{$CPU_TEMP_WARN}'
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent/sensors,15m)>{$CPU_TEMP_WARN}'
               name: 'Cpu temperature > {$CPU_TEMP_WARN}'
+              opdata: 'Current temperature: {ITEM.VALUE}'
               priority: WARNING
       macros:
         - macro: '{$CPU_TEMP_CRITICAL}'
@@ -75,12 +77,14 @@ zabbix_export:
               value: cpu
           triggers:
             - uuid: e213890690844af6a30aed2e045d1aa1
-              expression: 'avg(/Linux CPU Temperature by Zabbix agent active/sensors,5m)>={$CPU_TEMP_CRITICAL}'
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent active/sensors,15m)>{$CPU_TEMP_CRITICAL}'
               name: 'Cpu temperature > {$CPU_TEMP_CRITICAL}'
+              opdata: 'Current temperature: {ITEM.VALUE}'
               priority: HIGH
             - uuid: 01c6f2a922cc44d88df2b6602c8e493b
-              expression: 'avg(/Linux CPU Temperature by Zabbix agent active/sensors,5m)>{$CPU_TEMP_WARN}'
+              expression: 'avg(/Linux CPU Temperature by Zabbix agent active/sensors,15m)>{$CPU_TEMP_WARN}'
               name: 'Cpu temperature > {$CPU_TEMP_WARN}'
+              opdata: 'Current temperature: {ITEM.VALUE}'
               priority: WARNING
       macros:
         - macro: '{$CPU_TEMP_CRITICAL}'

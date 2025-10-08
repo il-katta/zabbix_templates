@@ -11,6 +11,23 @@ zabbix_export:
       groups:
         - name: Custom
       items:
+        - uuid: 12fe9bc1820e4313bfee760e30361146
+          name: Shelly.CheckForUpdate
+          type: HTTP_AGENT
+          key: Shelly.CheckForUpdate
+          delay: 1h
+          history: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: '{$SHELLY_USER}'
+          password: '{$SHELLY_PASS}'
+          url: 'http://{$SHELLY_HOST}/rpc/Shelly.CheckForUpdate'
+          output_format: JSON
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
         - uuid: b1053ee640174f4e9df0a30a52480932
           name: Shelly.GetStatus
           type: HTTP_AGENT
@@ -18,7 +35,7 @@ zabbix_export:
           history: '0'
           value_type: TEXT
           authtype: DIGEST
-          username: admin
+          username: '{$SHELLY_USER}'
           password: '{$SHELLY_PASS}'
           url: 'http://{$SHELLY_HOST}/rpc/Shelly.GetStatus'
           output_format: JSON
@@ -189,6 +206,35 @@ zabbix_export:
               value: switch
             - tag: device
               value: shelly
+        - uuid: dbedce478bda4bf59d4c9c7166d9359e
+          name: 'Shelly avaiable update'
+          type: DEPENDENT
+          key: shelly.update.avaiable
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.body.stable.version
+              error_handler: CUSTOM_VALUE
+              error_handler_params: none
+          master_item:
+            key: Shelly.CheckForUpdate
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+          triggers:
+            - uuid: c138365b6753452db1941970ec2a9a68
+              expression: 'last(/Shelly Plug by HTTP/shelly.update.avaiable)<>"none"'
+              name: 'New update available'
+              url: 'http://{$SHELLY_HOST}'
+              priority: INFO
+              tags:
+                - tag: component
+                  value: switch
+                - tag: device
+                  value: shelly
       tags:
         - tag: class
           value: hardware

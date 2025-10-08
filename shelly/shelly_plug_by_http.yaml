@@ -1,0 +1,219 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 854db6054ead4b88bdb3a1b1d94bfde1
+      name: Custom
+  templates:
+    - uuid: 27702d31cacc48a5b25a4a4aa2fe9362
+      template: 'Shelly Plug by HTTP'
+      name: 'Shelly Plug by HTTP'
+      groups:
+        - name: Custom
+      items:
+        - uuid: b1053ee640174f4e9df0a30a52480932
+          name: Shelly.GetStatus
+          type: HTTP_AGENT
+          key: Shelly.GetStatus
+          history: '0'
+          value_type: TEXT
+          authtype: DIGEST
+          username: admin
+          password: '{$SHELLY_PASS}'
+          url: 'http://{$SHELLY_HOST}/rpc/Shelly.GetStatus'
+          output_format: JSON
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: 246ccb13775a43f595a1ced37b107feb
+          name: 'Power by minute 1'
+          type: DEPENDENT
+          key: 'shelly.switch.aenergy.by_minute0[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: mW
+          description: 'Energy consumption in Milliwatt-hours for the last minute'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[0]'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: 85cf8c2f788e4a50ac72cdcab3da3f7d
+          name: 'Power by minute 2'
+          type: DEPENDENT
+          key: 'shelly.switch.aenergy.by_minute1[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: mW
+          description: 'Energy consumption in Milliwatt-hours for the last 2nd minute'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[1]'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: 917fad0bf3f24c5b9b03ababbb57166b
+          name: 'Power by minute 3'
+          type: DEPENDENT
+          key: 'shelly.switch.aenergy.by_minute2[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: mW
+          description: 'Energy consumption in Milliwatt-hours for the last 3rd minute'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[2]'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: 92882313dc0a4fb185fd8de2e36f67e2
+          name: 'Total energy'
+          type: DEPENDENT
+          key: 'shelly.switch.aenergy.total[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: Wh
+          description: 'Total energy consumed in Watt-hours'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.total'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: 136a411fd794423191e7cba564dea347
+          name: 'Active Power'
+          type: DEPENDENT
+          key: 'shelly.switch.apower[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: Watt
+          description: 'Last measured instantaneous active power (in Watts) delivered to the attached load'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].apower'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: bd9339858dcd46a68c40ea3c02bcd28e
+          name: Current
+          type: DEPENDENT
+          key: 'shelly.switch.current[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: A
+          description: 'Last measured current in Amperes'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].current'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: f81ce2b4335245f68356e51643def916
+          name: Power
+          type: DEPENDENT
+          key: 'shelly.switch.output[{$SHELLY_SWITCH}]'
+          description: 'Power status'
+          valuemap:
+            name: 'Power status'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].output'
+            - type: BOOL_TO_DECIMAL
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: eb544693184d4d7e9f42f1fa8fdddfb1
+          name: Temperature
+          type: DEPENDENT
+          key: 'shelly.switch.temperature[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: '° C'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].temperature.tC'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+        - uuid: b80f163033da4fea881f0fa21a716bf0
+          name: Voltage
+          type: DEPENDENT
+          key: 'shelly.switch.voltage[{$SHELLY_SWITCH}]'
+          value_type: FLOAT
+          units: V
+          description: 'Last measured voltage in Volts'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].voltage'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: component
+              value: switch
+            - tag: device
+              value: shelly
+      tags:
+        - tag: class
+          value: hardware
+        - tag: target
+          value: shelly
+      macros:
+        - macro: '{$SHELLY_HOST}'
+          value: localhost
+          description: 'Shelly network hostname or IP address'
+        - macro: '{$SHELLY_PASS}'
+          type: SECRET_TEXT
+          description: 'Shelly password'
+        - macro: '{$SHELLY_SWITCH_ID}'
+          value: '0'
+          description: 'Shelly switch/cover ID (usually does not need to be changed)'
+        - macro: '{$SHELLY_TYPE}'
+          value: switch
+          description: 'Shelly device type (e.g., ''switch'' for plugs, ''cover'' for 2PM, ''pm1'' for PM Mini, etc.)'
+        - macro: '{$SHELLY_USER}'
+          value: admin
+          description: 'Shelly username (usually does not need to be changed)'
+      valuemaps:
+        - uuid: d8ee1422107a41f3b3f8e4b4d39b3bfb
+          name: 'Power status'
+          mappings:
+            - value: '1'
+              newvalue: 'On'
+            - value: '0'
+              newvalue: 'Off'

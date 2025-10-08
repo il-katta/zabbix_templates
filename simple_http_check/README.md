@@ -2,8 +2,7 @@
 
 Zabbix template for monitoring HTTP service availability and performance.
 
-Template file: [Simple HTTP check.yaml](Simple%20HTTP20check.yaml)
-
+Template file: [Simple HTTP check.yaml](Simple%20HTTP%20check.yaml)
 
 ## Requirements
 

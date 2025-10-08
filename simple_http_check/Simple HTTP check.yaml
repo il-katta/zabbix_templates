@@ -1,0 +1,45 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 854db6054ead4b88bdb3a1b1d94bfde1
+      name: Custom
+  templates:
+    - uuid: 2acbf6e7c5bb487aa88d3a768fa1b595
+      template: 'Simple HTTP check'
+      name: 'Simple HTTP check'
+      description: 'See https://github.com/il-katta/zabbix_templates/tree/master/simple_http_check for documentation'
+      groups:
+        - name: Custom
+      items:
+        - uuid: 6db9d495609147fdb480144fadf484fc
+          name: 'HTTP Perf'
+          key: 'net.tcp.service.perf[http,,{$HTTP_PORT}]'
+          value_type: FLOAT
+          units: s
+          tags:
+            - tag: component
+              value: service
+        - uuid: 458ac2417a674f8bbafb5f302ec0b8dd
+          name: 'HTTP Check'
+          key: 'net.tcp.service[http,,{$HTTP_PORT}]'
+          valuemap:
+            name: 'Service check'
+          tags:
+            - tag: component
+              value: service
+          triggers:
+            - uuid: 11097ef538f442cf808bda7611aee81c
+              expression: 'last(/Simple HTTP check/net.tcp.service[http,,{$HTTP_PORT}])=0'
+              name: 'HTTP Service down'
+              priority: HIGH
+      macros:
+        - macro: '{$HTTP_PORT}'
+          value: '80'
+      valuemaps:
+        - uuid: 48dddd0ec5144356b72860153b43c3fb
+          name: 'Service check'
+          mappings:
+            - value: '1'
+              newvalue: UP
+            - value: '0'
+              newvalue: DOWN

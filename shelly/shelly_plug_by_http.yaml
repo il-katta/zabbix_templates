@@ -7,6 +7,7 @@ zabbix_export:
     - uuid: 27702d31cacc48a5b25a4a4aa2fe9362
       template: 'Shelly Plug by HTTP'
       name: 'Shelly Plug by HTTP'
+      description: 'See https://github.com/il-katta/zabbix_templates/tree/master/shelly for documentation'
       groups:
         - name: Custom
       items:

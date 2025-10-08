@@ -2,6 +2,8 @@
 
 Zabbix template for monitoring Shelly devices via HTTP. Tested with Shelly Plus2PM, Shelly PlusPlugS, Shelly PlugS Gen3, and Shelly PM Mini Gen3.
 
+Template file: [shelly_plug_by_http.yaml](shelly_plug_by_http.yaml)
+
 ## Requirements
 
 No installation required on the devices. The Zabbix server or proxy must be able to reach the Shelly devices via HTTP.

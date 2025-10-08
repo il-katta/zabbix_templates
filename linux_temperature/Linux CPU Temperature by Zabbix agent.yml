@@ -8,11 +8,14 @@ zabbix_export:
       template: 'Linux CPU Temperature by Zabbix agent'
       name: 'Linux CPU Temperature by Zabbix agent'
       description: |
+        
         User parameters:
         
         ```
         UserParameter=sensors,/usr/bin/sensors -j
         ```
+
+        See https://github.com/il-katta/zabbix_templates/tree/master/linux_temperature for documentation
       groups:
         - name: Custom
       items:

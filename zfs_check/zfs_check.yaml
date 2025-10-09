@@ -1,0 +1,276 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 854db6054ead4b88bdb3a1b1d94bfde1
+      name: Custom
+  templates:
+    - uuid: bf66009d69b448d7a88d3489ccbbf20f
+      template: 'ZFS Check'
+      name: 'ZFS Check'
+      groups:
+        - name: Custom
+      items:
+        - uuid: 9b2166c3f2364a56878b8f1aa4ac48da
+          name: 'zpool list'
+          key: zfs.list
+          delay: 10m
+          value_type: TEXT
+          tags:
+            - tag: component
+              value: zfs
+            - tag: custom
+              value: zfs
+        - uuid: ff1a3a0bc37b48329d5108a9ff6f81e5
+          name: 'zpool status'
+          key: zfs.status
+          delay: 10m
+          value_type: TEXT
+          tags:
+            - tag: component
+              value: zfs
+            - tag: custom
+              value: zfs
+      discovery_rules:
+        - uuid: 189df010d0de4bbb99b7936d4e84a51b
+          name: 'ZFS {#ZPOOL_NAME} Devices'
+          type: DEPENDENT
+          key: 'zfs.devices.discovery[{#ZPOOL_NAME}]'
+          item_prototypes:
+            - uuid: 3bf0de7ab0ff4c0a9d375b79d7c51389
+              name: 'ZFS [{#ZPOOL_NAME}] Device [{#ZPOOL_DEVICE}]: checksum errors'
+              type: DEPENDENT
+              key: 'zfs.status.checksum_errors[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.checksum_errors
+              master_item:
+                key: 'zfs.status[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: 997a2a05656e41d088459d1f8d3062be
+              name: 'ZFS [{#ZPOOL_NAME}] Device [{#ZPOOL_DEVICE}]: slow ios'
+              type: DEPENDENT
+              key: 'zfs.status.slow_ios[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.slow_ios
+              master_item:
+                key: 'zfs.status[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: 86b10a928b144cbd9e0a8c905acdfde1
+              name: 'ZFS [{#ZPOOL_NAME}] Device [{#ZPOOL_DEVICE}]: state'
+              type: DEPENDENT
+              key: 'zfs.status.state[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.state
+              master_item:
+                key: 'zfs.status[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: bd71cc756b0b48269ebbfa19dd01634d
+              name: 'ZFS [{#ZPOOL_NAME}] Device [{#ZPOOL_DEVICE}]: write errors'
+              type: DEPENDENT
+              key: 'zfs.status.write_errors[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - $.write_errors
+              master_item:
+                key: 'zfs.status[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: 7dc747a30ad34e45908d51042cce7e5b
+              name: 'ZFS [{#ZPOOL_NAME}] Device [{#ZPOOL_DEVICE}]: status'
+              type: DEPENDENT
+              key: 'zfs.status[{#ZPOOL_NAME},{#ZPOOL_DEVICE}]'
+              history: '0'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].vdevs[''{#ZPOOL_DEVICE}'']'
+              master_item:
+                key: zfs.status
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+          parent_discovery_rule:
+            key: zfs.pool.discovery
+          master_item:
+            key: zfs.status
+          lld_macro_paths:
+            - lld_macro: '{#ZPOOL_DEVICE}'
+              path: $.name
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.pools[''{#ZPOOL_NAME}''].vdevs'
+            - type: JSONPATH
+              parameters:
+                - '$[?(@.vdev_type == ''disk'')]'
+        - uuid: 2ddb5b9d2cfc4979a0b42a5f28b6c08d
+          name: 'ZFS Pool discovery'
+          type: DEPENDENT
+          key: zfs.pool.discovery
+          item_prototypes:
+            - uuid: 885fba8d335b48f79706e4dac63b5025
+              name: 'ZFS [{#ZPOOL_NAME}]: allocated'
+              type: DEPENDENT
+              key: 'zfs.pool.allocated[{#ZPOOL_NAME}]'
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].properties.allocated.value'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: c6ab858290ac4333977c9e12176af934
+              name: 'ZFS [{#ZPOOL_NAME}]: autotrim'
+              type: DEPENDENT
+              key: 'zfs.pool.autotrim[{#ZPOOL_NAME}]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].properties.autotrim.value'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: cd95167db4444c0e82fc08e74f59a597
+              name: 'ZFS [{#ZPOOL_NAME}]: fragmentation'
+              type: DEPENDENT
+              key: 'zfs.pool.fragmentation[{#ZPOOL_NAME}]'
+              value_type: FLOAT
+              units: '%'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].properties.fragmentation.value'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: 797780d2075248a69fc52c800d4b3fc3
+              name: 'ZFS [{#ZPOOL_NAME}]: free'
+              type: DEPENDENT
+              key: 'zfs.pool.free[{#ZPOOL_NAME}]'
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].properties.free.value'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: d0f2803098014e0083b0afb2bc5d5131
+              name: 'ZFS [{#ZPOOL_NAME}]: health'
+              type: DEPENDENT
+              key: 'zfs.pool.health[{#ZPOOL_NAME}]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].properties.health.value'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: 56a2b22d77c64f6a82c9178123d4b0d2
+              name: 'ZFS [{#ZPOOL_NAME}]: name'
+              type: DEPENDENT
+              key: 'zfs.pool.name[{#ZPOOL_NAME}]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].name'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: e3d10cf889f54b98995afa66258d9963
+              name: 'ZFS [{#ZPOOL_NAME}]: size'
+              type: DEPENDENT
+              key: 'zfs.pool.size[{#ZPOOL_NAME}]'
+              units: B
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].properties.size.value'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+            - uuid: eed4e94e706f42e7ad6016c7f2647e99
+              name: 'ZFS [{#ZPOOL_NAME}]: state'
+              type: DEPENDENT
+              key: 'zfs.pool.state[{#ZPOOL_NAME}]'
+              value_type: TEXT
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.pools[''{#ZPOOL_NAME}''].state'
+              master_item:
+                key: zfs.list
+              tags:
+                - tag: component
+                  value: zfs
+                - tag: custom
+                  value: zfs
+          master_item:
+            key: zfs.list
+          lld_macro_paths:
+            - lld_macro: '{#ZPOOL_NAME}'
+              path: $.name
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.pools[*]'
+      tags:
+        - tag: custom
+          value: zfs

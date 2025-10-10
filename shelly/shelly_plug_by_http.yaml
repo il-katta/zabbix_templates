@@ -49,12 +49,15 @@ zabbix_export:
           type: DEPENDENT
           key: 'shelly.switch.aenergy.by_minute0[{$SHELLY_SWITCH}]'
           value_type: FLOAT
-          units: mW
+          units: W
           description: 'Energy consumption in Milliwatt-hours for the last minute'
           preprocessing:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[0]'
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value/1000'
           master_item:
             key: Shelly.GetStatus
           tags:
@@ -67,12 +70,15 @@ zabbix_export:
           type: DEPENDENT
           key: 'shelly.switch.aenergy.by_minute1[{$SHELLY_SWITCH}]'
           value_type: FLOAT
-          units: mW
+          units: W
           description: 'Energy consumption in Milliwatt-hours for the last 2nd minute'
           preprocessing:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[1]'
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value/1000'
           master_item:
             key: Shelly.GetStatus
           tags:
@@ -85,12 +91,15 @@ zabbix_export:
           type: DEPENDENT
           key: 'shelly.switch.aenergy.by_minute2[{$SHELLY_SWITCH}]'
           value_type: FLOAT
-          units: mW
+          units: W
           description: 'Energy consumption in Milliwatt-hours for the last 3rd minute'
           preprocessing:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[2]'
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value/1000'
           master_item:
             key: Shelly.GetStatus
           tags:

@@ -20,6 +20,8 @@ No installation required on the devices. The Zabbix server or proxy must be able
 - **{$SHELLY_PASS}**: device password (only required if configured on the device, otherwise can be left empty)
 - **{$SHELLY_TYPE}**: component type to retrieve data from in the JSON response (default: `switch`)
 - **{$SHELLY_SWITCH_ID}**: switch/cover ID in the device (default: `0`)
+- **{$SHELLY_MQTT_ENABLED}**: set to `1` to enable MQTT connection state monitoring, `0` to disable (default: `0`)
+- **{$SHELLY_WIFI_RSSI_WARN}**: minimum WiFi RSSI signal strength threshold in dBm (default: `-70`)
 
 ## Determining {$SHELLY_TYPE} and {$SHELLY_SWITCH_ID} values
 

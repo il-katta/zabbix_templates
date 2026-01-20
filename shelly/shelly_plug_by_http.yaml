@@ -11,6 +11,27 @@ zabbix_export:
       groups:
         - name: Custom
       items:
+        - uuid: 0d40406da7b24ea6b4daf950e10dcf07
+          name: 'Host ping'
+          type: SIMPLE
+          key: 'net.tcp.service[http,,80]'
+          valuemap:
+            name: 'Service state'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          tags:
+            - tag: component
+              value: healt
+            - tag: device
+              value: shelly
+          triggers:
+            - uuid: 6c95c9c4f22c4f96a1a0914bacb164a4
+              expression: 'last(/Shelly Plug by HTTP/net.tcp.service[http,,80])=0'
+              name: 'Host is down'
+              priority: AVERAGE
+              manual_close: 'YES'
         - uuid: 12fe9bc1820e4313bfee760e30361146
           name: Shelly.CheckForUpdate
           type: HTTP_AGENT
@@ -21,7 +42,14 @@ zabbix_export:
           authtype: DIGEST
           username: '{$SHELLY_USER}'
           password: '{$SHELLY_PASS}'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 1d
           url: 'http://{$SHELLY_HOST}/rpc/Shelly.CheckForUpdate'
+          headers:
+            - name: User-Agent
+              value: Zabbix/7.4
           output_format: JSON
           tags:
             - tag: component
@@ -38,12 +66,54 @@ zabbix_export:
           username: '{$SHELLY_USER}'
           password: '{$SHELLY_PASS}'
           url: 'http://{$SHELLY_HOST}/rpc/Shelly.GetStatus'
+          headers:
+            - name: User-Agent
+              value: Zabbix/7.4
           output_format: JSON
           tags:
             - tag: component
               value: switch
             - tag: device
               value: shelly
+        - uuid: 7da482cf27dc4ab1b6c38f0463e26e73
+          name: 'MQTT connection state'
+          type: DEPENDENT
+          key: shelly.mqtt.connected
+          description: 'Current state of MQTT connection'
+          valuemap:
+            name: Boolean
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.body.mqtt.connected
+              error_handler: CUSTOM_VALUE
+              error_handler_params: 'false'
+            - type: STR_REPLACE
+              parameters:
+                - 'true'
+                - '1'
+            - type: STR_REPLACE
+              parameters:
+                - 'false'
+                - '0'
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: device
+              value: shelly
+          triggers:
+            - uuid: bb13dbff13c14fa8a1c955a96996ed69
+              expression: '{$SHELLY_MQTT_ENABLED}=1 and last(/Shelly Plug by HTTP/shelly.mqtt.connected)<>1'
+              name: 'MQTT connection state anomaly'
+              opdata: 'Current value: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              manual_close: 'YES'
+              dependencies:
+                - name: 'Host is down'
+                  expression: 'last(/Shelly Plug by HTTP/net.tcp.service[http,,80])=0'
+              tags:
+                - tag: device
+                  value: shelly
         - uuid: 246ccb13775a43f595a1ced37b107feb
           name: 'Power by minute 1'
           type: DEPENDENT
@@ -55,6 +125,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[0]'
+              error_handler: DISCARD_VALUE
             - type: JAVASCRIPT
               parameters:
                 - 'return value/1000'
@@ -76,6 +147,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[1]'
+              error_handler: DISCARD_VALUE
             - type: JAVASCRIPT
               parameters:
                 - 'return value/1000'
@@ -97,6 +169,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.by_minute[2]'
+              error_handler: DISCARD_VALUE
             - type: JAVASCRIPT
               parameters:
                 - 'return value/1000'
@@ -118,6 +191,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].aenergy.total'
+              error_handler: DISCARD_VALUE
           master_item:
             key: Shelly.GetStatus
           tags:
@@ -136,6 +210,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].apower'
+              error_handler: DISCARD_VALUE
           master_item:
             key: Shelly.GetStatus
           tags:
@@ -154,6 +229,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].current'
+              error_handler: DISCARD_VALUE
           master_item:
             key: Shelly.GetStatus
           tags:
@@ -172,6 +248,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].output'
+              error_handler: DISCARD_VALUE
             - type: BOOL_TO_DECIMAL
           master_item:
             key: Shelly.GetStatus
@@ -190,6 +267,7 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].temperature.tC'
+              error_handler: DISCARD_VALUE
           master_item:
             key: Shelly.GetStatus
           tags:
@@ -208,11 +286,28 @@ zabbix_export:
             - type: JSONPATH
               parameters:
                 - '$.body[''{$SHELLY_TYPE}:{$SHELLY_SWITCH_ID}''].voltage'
+              error_handler: DISCARD_VALUE
           master_item:
             key: Shelly.GetStatus
           tags:
             - tag: component
               value: switch
+            - tag: device
+              value: shelly
+        - uuid: 760cc8fd8bc94bfd8e76daed97c9f257
+          name: 'MAC address'
+          type: DEPENDENT
+          key: shelly.sys.mac
+          value_type: TEXT
+          description: 'Device MAC address'
+          inventory_link: MACADDRESS_A
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.body.sys.mac
+          master_item:
+            key: Shelly.GetStatus
+          tags:
             - tag: device
               value: shelly
         - uuid: dbedce478bda4bf59d4c9c7166d9359e
@@ -239,11 +334,75 @@ zabbix_export:
               name: 'New update available'
               url: 'http://{$SHELLY_HOST}'
               priority: INFO
+              dependencies:
+                - name: 'Host is down'
+                  expression: 'last(/Shelly Plug by HTTP/net.tcp.service[http,,80])=0'
               tags:
                 - tag: component
                   value: switch
                 - tag: device
                   value: shelly
+        - uuid: 2181c701cd7c4a7f8fd40c5dad64a905
+          name: 'WiFi RSSI'
+          type: DEPENDENT
+          key: shelly.wifi.rssi
+          value_type: FLOAT
+          units: dBm
+          description: 'WiFi signal strength in dBm'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.body.wifi.rssi
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: device
+              value: shelly
+          triggers:
+            - uuid: 9bd488d9e48849c58e6be19557e8886f
+              expression: 'last(/Shelly Plug by HTTP/shelly.wifi.rssi)<{$SHELLY_WIFI_RSSI_WARN}'
+              name: 'WiFi RSSI low'
+              opdata: 'Current value: {ITEM.LASTVALUE1} dBm'
+              priority: WARNING
+              manual_close: 'YES'
+              dependencies:
+                - name: 'Host is down'
+                  expression: 'last(/Shelly Plug by HTTP/net.tcp.service[http,,80])=0'
+              tags:
+                - tag: device
+                  value: shelly
+        - uuid: d850501bdd3a47839b6cbd39cc029e5c
+          name: 'WiFi SSID'
+          type: DEPENDENT
+          key: shelly.wifi.ssid
+          value_type: TEXT
+          description: 'Connected WiFi network SSID'
+          inventory_link: HOST_NETWORKS
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.body.wifi.ssid
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: device
+              value: shelly
+        - uuid: c7c1e0e49d7c40fcaf4afc959f3902af
+          name: 'WiFi IP address'
+          type: DEPENDENT
+          key: shelly.wifi.sta_ip
+          value_type: TEXT
+          description: 'Current WiFi IP address'
+          inventory_link: OOB_IP
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.body.wifi.sta_ip
+          master_item:
+            key: Shelly.GetStatus
+          tags:
+            - tag: device
+              value: shelly
       tags:
         - tag: class
           value: hardware
@@ -253,6 +412,9 @@ zabbix_export:
         - macro: '{$SHELLY_HOST}'
           value: localhost
           description: 'Shelly network hostname or IP address'
+        - macro: '{$SHELLY_MQTT_ENABLED}'
+          value: '0'
+          description: 'Set to 0 or 1 to check MQTT connection state'
         - macro: '{$SHELLY_PASS}'
           type: SECRET_TEXT
           description: 'Shelly password'
@@ -265,7 +427,17 @@ zabbix_export:
         - macro: '{$SHELLY_USER}'
           value: admin
           description: 'Shelly username (usually does not need to be changed)'
+        - macro: '{$SHELLY_WIFI_RSSI_WARN}'
+          value: '-70'
+          description: 'Minimum WiFi RSSI signal strength'
       valuemaps:
+        - uuid: 2de8ec9fe66f45139688156325e2585c
+          name: Boolean
+          mappings:
+            - value: '1'
+              newvalue: 'true'
+            - value: '0'
+              newvalue: 'false'
         - uuid: d8ee1422107a41f3b3f8e4b4d39b3bfb
           name: 'Power status'
           mappings:
@@ -273,3 +445,10 @@ zabbix_export:
               newvalue: 'On'
             - value: '0'
               newvalue: 'Off'
+        - uuid: d275f91c18bd45f3a805f3065f708c9c
+          name: 'Service state'
+          mappings:
+            - value: '0'
+              newvalue: Down
+            - value: '1'
+              newvalue: Up
